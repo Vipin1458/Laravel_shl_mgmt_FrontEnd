@@ -9,8 +9,11 @@ import {
   Button,
   TextField,
   MenuItem,
-  Stack
+  Stack,
 } from "@mui/material";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 export default function TeachersPage() {
   const [teachers, setTeachers] = useState([]);
@@ -93,14 +96,19 @@ export default function TeachersPage() {
           </thead>
           <tbody className="bg-white">
             {teachers.map((teacher, index) => (
-              <tr key={teacher.id} className="text-center border-t hover:bg-gray-50">
+              <tr
+                key={teacher.id}
+                className="text-center border-t hover:bg-gray-50"
+              >
                 <td className="px-4 py-2 border">{index + 1}</td>
                 <td className="px-4 py-2 border">
                   {teacher.first_name} {teacher.last_name}
                 </td>
                 <td className="px-4 py-2 border">{teacher.email}</td>
                 <td className="px-4 py-2 border">{teacher.phone_number}</td>
-                <td className="px-4 py-2 border">{teacher.subject_specialization}</td>
+                <td className="px-4 py-2 border">
+                  {teacher.subject_specialization}
+                </td>
                 <td className="px-4 py-2 border">{teacher.employee_id}</td>
                 <td className="px-4 py-2 border">
                   <span
@@ -113,24 +121,26 @@ export default function TeachersPage() {
                     {teacher.status}
                   </span>
                 </td>
-                <td className="px-4 py-2 border">
+                <td className="flex gap-2 justify-center">
                   <button
-                    className="bg-gray-500 hover:bg-blue-600 text-white px-3 py-1 rounded mr-2"
                     onClick={() => handleViewStudents(teacher)}
                   >
-                    View Students
+                    <VisibilityIcon fontSize="small" />
+                    
                   </button>
+
                   <button
-                    className="bg-yellow-600 hover:bg-yellow-600 text-white px-3 py-1 rounded mr-2"
                     onClick={() => handleEdit(teacher)}
                   >
-                    Edit
+                    <EditIcon fontSize="small" />
+                    
                   </button>
+
                   <button
-                    className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
                     onClick={() => handleDelete(teacher.id)}
                   >
-                    Delete
+                    <DeleteIcon fontSize="small" />
+                    
                   </button>
                 </td>
               </tr>
@@ -230,7 +240,9 @@ export default function TeachersPage() {
                   <div className="font-semibold">
                     {student.first_name} {student.last_name}
                   </div>
-                  <div className="text-sm text-gray-600">Email: {student.email}</div>
+                  <div className="text-sm text-gray-600">
+                    Email: {student.email}
+                  </div>
                   <div className="text-sm text-gray-600">
                     Roll No: {student.roll_number}, Class: {student.class_grade}
                   </div>
@@ -238,7 +250,9 @@ export default function TeachersPage() {
               ))}
             </ul>
           ) : (
-            <p className="text-gray-500">No students assigned to this teacher.</p>
+            <p className="text-gray-500">
+              No students assigned to this teacher.
+            </p>
           )}
         </DialogContent>
         <DialogActions>

@@ -25,8 +25,8 @@ export default function DashboardLayout() {
   };
 
   return (
-    <div className="flex h-full overflow-y-hidden">
-      <aside className="w-60 bg-gray-900 text-white flex flex-col h-screen">
+   <div className="flex h-screen overflow-hidden">
+  <aside className="w-60 bg-gray-900 text-white flex flex-col">
         <div className="p-4 border-b border-gray-700">
           <h1 className="text-xl font-bold">School App</h1>
         </div>
@@ -56,18 +56,19 @@ export default function DashboardLayout() {
         </div>
       </aside>
 
-      <div className="flex-1 bg-gray-50">
-        <header className="bg-white shadow flex justify-between items-center px-6 py-4">
-          <h2 className="text-xl font-semibold">
-            Welcome {auth?.user?.name || "User"}
-          </h2>
-          <span className="text-gray-600 capitalize">{role}</span>
-        </header>
+       <div className="flex-1 flex flex-col bg-gray-50">
+    <header className="bg-white shadow flex justify-between items-center px-6 py-4">
+      <h2 className="text-xl font-semibold">
+        Welcome {auth?.user?.name || "User"}
+      </h2>
+      <span className="text-gray-600 capitalize">{role}</span>
+    </header>
 
-        <main className="p-0 h-full place-items-center">
-          <Outlet />
-        </main>
-      </div>
+    
+    <main className="flex-1 overflow-y-auto p-0">
+      <Outlet />
+    </main>
+  </div>
     </div>
   );
 }

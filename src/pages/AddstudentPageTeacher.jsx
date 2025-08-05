@@ -13,6 +13,8 @@ export default function AddStudentPageByTeacher() {
   } = useForm();
 
   const [message, setMessage] = useState("");
+  const [errorMessages, setErrorMessages] = useState([]);
+  const [fieldErrors, setFieldErrors] = useState({});
   const navigate = useNavigate()
   const onSubmit = async (data) => {
     try {
@@ -20,10 +22,30 @@ export default function AddStudentPageByTeacher() {
       setMessage("Student added successfully!");
       navigate('/my-students')
       reset();
-    } catch (error) {
-      const errMsg =
-        error.response?.data?.message || error.response?.data?.errors?.email?.[0] || "Error adding student.";
-      setMessage(errMsg);
+    }  catch (err) {
+      console.error("API error:", err);
+
+      if (err.response && err.response.data) {
+        const data = err.response.data.errors || {};
+        const errorList = [];
+        const fieldErrs = {};
+
+        for (const key in data) {
+          const msgs = data[key];
+          if (Array.isArray(msgs)) {
+            fieldErrs[key] = msgs;
+            errorList.push(...msgs);
+          } else if (typeof msgs === "string") {
+            fieldErrs[key] = [msgs];
+            errorList.push(msgs);
+          }
+        }
+
+        setErrorMessages(errorList);
+        setFieldErrors(fieldErrs);
+      } else {
+        setErrorMessages(["Failed to create student"]);
+      }
     }
   };
 
@@ -31,10 +53,16 @@ export default function AddStudentPageByTeacher() {
 <div className="max-w-4xl mx-auto mt-10 p-6 bg-white rounded shadow">
   <h2 className="text-2xl font-bold mb-6 text-center">Add Student</h2>
 
-  {message && (
-    <div className="mb-6 text-sm font-medium text-blue-700 text-center">{message}</div>
-  )}
 
+  {errorMessages.length > 0 && (
+        <div className="bg-red-100 text-red-700 px-4 py-2 rounded mb-4">
+          <ul className="list-disc pl-5">
+            {errorMessages.map((msg, index) => (
+              <li key={index}>{msg}</li>
+            ))}
+          </ul>
+        </div>
+      )}
   <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-6">
     <div>
       <label className="block mb-1 font-medium">First Name</label>
@@ -44,7 +72,7 @@ export default function AddStudentPageByTeacher() {
 
     <div>
       <label className="block mb-1 font-medium">Last Name</label>
-      <input {...register("last_name", { required: "Last name is required" })} className="input w-full" />
+      <input {...register("last_name")} className="input w-full" />
       {errors.last_name && <p className="text-red-600 text-sm mt-1">{errors.last_name.message}</p>}
     </div>
 

@@ -18,6 +18,8 @@ export default function AddTeacherPage() {
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [errorMessages, setErrorMessages] = useState([]);
+  const [fieldErrors, setFieldErrors] = useState({});
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -32,12 +34,33 @@ export default function AddTeacherPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axiosInstance.post("/teachers", formData);
+      const res = await axiosInstance.post("/teachers", formData);  
       setSuccess(" Teacher added successfully");
       setTimeout(() => navigate("/teachersPage"), 1000);
-    } catch (err) {
-      console.error(err);
-      setError(" Failed to add teacher");
+    }  catch (err) {
+      console.error("API error:", err);
+
+      if (err.response && err.response.data) {
+        const data = err.response.data.errors || {};
+        const errorList = [];
+        const fieldErrs = {};
+
+        for (const key in data) {
+          const msgs = data[key];
+          if (Array.isArray(msgs)) {
+            fieldErrs[key] = msgs;
+            errorList.push(...msgs);
+          } else if (typeof msgs === "string") {
+            fieldErrs[key] = [msgs];
+            errorList.push(msgs);
+          }
+        }
+
+        setErrorMessages(errorList);
+        setFieldErrors(fieldErrs);
+      } else {
+        setErrorMessages(["Failed to create student"]);
+      }
     }
   };
 
@@ -45,9 +68,17 @@ export default function AddTeacherPage() {
     <div className="max-w-3xl mx-auto p-6 bg-white shadow-md rounded">
       <h2 className="text-2xl font-bold mb-4">Add New Teacher</h2>
 
-      {error && <div className="bg-red-100 text-red-700 p-2 rounded mb-4">{error}</div>}
+    
       {success && <div className="bg-green-100 text-green-700 p-2 rounded mb-4">{success}</div>}
-
+       {errorMessages.length > 0 && (
+        <div className="bg-red-100 text-red-700 px-4 py-2 rounded mb-4">
+          <ul className="list-disc pl-5">
+            {errorMessages.map((msg, index) => (
+              <li key={index}>{msg}</li>
+            ))}
+          </ul>
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
         <label className="flex flex-col">
           First Name
@@ -55,7 +86,7 @@ export default function AddTeacherPage() {
         </label>
         <label className="flex flex-col">
           Last Name
-          <input type="text" name="last_name" value={formData.last_name} onChange={handleChange} required className="border p-2 rounded" />
+          <input type="text" name="last_name" value={formData.last_name} onChange={handleChange}  className="border p-2 rounded" />
         </label>
         <label className="flex flex-col">
           Email

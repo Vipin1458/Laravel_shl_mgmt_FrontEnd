@@ -12,16 +12,20 @@ import AddTeacherPage from "./pages/AddTeachersPage";
 import TeacherStudentsPage from "./pages/TeacherStudentPage";
 import TeacherProfilePage from "./pages/TeacherProfile";
 import AddStudentPageByTeacher from "./pages/AddstudentPageTeacher";
+import { Toaster } from "react-hot-toast";
 
 export default function App() {
   const { auth } = useAuth();
 
   return (
-    
+     
+      <>
+         <Toaster position="top-right" reverseOrder={false} />
       <Routes>
         <Route path="/login" element={<Login />} />
 
         {auth?.token ? (
+          
           <Route path="/" element={<DashboardLayout />}>
             <Route index element={<Navigate to="/dashboard" />} />
             <Route path="dashboard" element={<DashboardHome />} />
@@ -38,6 +42,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/login" />} />
         )}
       </Routes>
+      </>
  
   );
 }
