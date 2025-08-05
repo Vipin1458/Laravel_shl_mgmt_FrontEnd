@@ -7,16 +7,21 @@ export default function StudentsPage() {
   const [teachers, setTeachers] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchStudents();
+    fetchStudents(currentPage);
     fetchTeachers();
-  }, []);
+  }, [currentPage]);
 
-  const fetchStudents = () => {
-    axiosInstance.get("/students")
-      .then((res) => setStudents(res.data))
+  const fetchStudents = (page = 1) => {
+    axiosInstance.get(`/students?page=${page}`)
+      .then((res) => {
+        setStudents(res.data.data);
+        setTotalPages(res.data.last_page);
+      })
       .catch((err) => console.error(err));
   };
 
@@ -28,6 +33,7 @@ export default function StudentsPage() {
 
   const handleEditChange = (e) => {
     const { name, value } = e.target;
+    
     setSelectedStudent((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -35,15 +41,21 @@ export default function StudentsPage() {
     axiosInstance.patch(`/students/${selectedStudent.id}/`, selectedStudent)
       .then(() => {
         setShowModal(false);
-        fetchStudents();
+        fetchStudents(currentPage);
       })
       .catch((err) => console.error(err));
   };
 
   const handleDelete = (id) => {
     axiosInstance.delete(`/students/${id}/`)
-      .then(() => fetchStudents())
+      .then(() => fetchStudents(currentPage))
       .catch((err) => console.error(err));
+  };
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
   };
 
   return (
@@ -119,6 +131,24 @@ export default function StudentsPage() {
         </table>
       </div>
 
+      <div className="mt-6 flex justify-center space-x-2">
+        <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="px-3 py-1 rounded border bg-gray-100 disabled:opacity-50">
+          Previous
+        </button>
+        {[...Array(totalPages)].map((_, i) => (
+          <button
+            key={i + 1}
+            onClick={() => handlePageChange(i + 1)}
+            className={`px-3 py-1 rounded border ${currentPage === i + 1 ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}
+          >
+            {i + 1}
+          </button>
+        ))}
+        <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="px-3 py-1 rounded border bg-gray-100 disabled:opacity-50">
+          Next
+        </button>
+      </div>
+
       {showModal && selectedStudent && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-xl">
@@ -160,24 +190,22 @@ export default function StudentsPage() {
                 </select>
               </label>
               <label className="flex flex-col col-span-2">
-  Assigned Teacher
-  <select
-    name="teacher_id"
-    value={selectedStudent.teacher_id || ""}
-    onChange={handleEditChange}
-    className="border p-2 rounded"
-  >
-    <option value="">Select Teacher</option>
-    {teachers.map((teacher) => (
-      <option key={teacher.id} value={teacher.id}>
-        {teacher.first_name} {teacher.last_name}
-      </option>
-    ))}
-  </select>
-</label>
-
+                Assigned Teacher
+                <select
+                  name="teacher_id"
+                  value={selectedStudent.teacher_id || ""}
+                  onChange={handleEditChange}
+                  className="border p-2 rounded"
+                >
+                  <option value="">Select Teacher</option>
+                  {teachers.map((teacher) => (
+                    <option key={teacher.id} value={teacher.id}>
+                      {teacher.first_name} {teacher.last_name}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
-
             <div className="mt-6 flex justify-between">
               <button onClick={handleUpdate} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
                 Update

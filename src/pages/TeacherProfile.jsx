@@ -78,7 +78,10 @@ export default function TeacherProfilePage() {
               value={formData.first_name}
               onChange={handleChange}
               fullWidth
-              disabled={!editing}
+              InputProps={{
+  readOnly: !editing,
+}}
+
             />
             <TextField
               label="Last Name"
@@ -86,7 +89,9 @@ export default function TeacherProfilePage() {
               value={formData.last_name}
               onChange={handleChange}
               fullWidth
-              disabled={!editing}
+               InputProps={{
+  readOnly: !editing,
+}}
             />
           </Stack>
 
@@ -97,7 +102,9 @@ export default function TeacherProfilePage() {
               value={formData.email}
               onChange={handleChange}
               fullWidth
-              disabled={!editing}
+               InputProps={{
+  readOnly: !editing,
+}}
             />
             <TextField
               label="Phone Number"
@@ -105,7 +112,9 @@ export default function TeacherProfilePage() {
               value={formData.phone_number}
               onChange={handleChange}
               fullWidth
-              disabled={!editing}
+               InputProps={{
+  readOnly: !editing,
+}}
             />
           </Stack>
 
@@ -116,7 +125,9 @@ export default function TeacherProfilePage() {
               value={formData.subject_specialization}
               onChange={handleChange}
               fullWidth
-              disabled={!editing}
+               InputProps={{
+  readOnly: !editing,
+}}
             />
             <TextField
               label="Employee ID"
@@ -124,7 +135,9 @@ export default function TeacherProfilePage() {
               value={formData.employee_id}
               onChange={handleChange}
               fullWidth
-              disabled={!editing}
+               InputProps={{
+  readOnly: !editing,
+}}
             />
           </Stack>
 
@@ -137,7 +150,9 @@ export default function TeacherProfilePage() {
               onChange={handleChange}
               InputLabelProps={{ shrink: true }}
               fullWidth
-              disabled={!editing}
+              InputProps={{
+  readOnly: !editing,
+}}
             />
             <TextField
               label="Status"
@@ -145,7 +160,9 @@ export default function TeacherProfilePage() {
               value={formData.status}
               onChange={handleChange}
               fullWidth
-              disabled={!editing}
+               InputProps={{
+  readOnly: !editing,
+}}
             />
           </Stack>
 

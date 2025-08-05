@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import axiosInstance from "../utils/AxiosPrivate";
 
 export default function AddStudentPage() {
@@ -21,15 +20,26 @@ export default function AddStudentPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  const fetchTeachers=async()=>{
+    try {
+      const res=await axiosInstance.get("/teachers")
+    console.log(res.data);
+    setTeachers(res.data)
+    } catch (error) {
+      console.error("Error loading teachers",error)
+    }
+    
+  }
+
   useEffect(() => {
-    axiosInstance
-      .get("/teachers/")
-      .then((res) => setTeachers(res.data))
-      .catch((err) => console.error("Error loading teachers", err));
+   fetchTeachers()
   }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+     if (name === "phone_number") {
+    if (!/^\d{0,10}$/.test(value)) return;
+  }
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -67,7 +77,11 @@ export default function AddStudentPage() {
       {error && <div className="text-red-600 mb-4">{error}</div>}
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <input name="first_name" value={formData.first_name} onChange={handleChange} placeholder="First Name" className="input" required />
+        <div className="flex flex-col">
+                  <label>FirstName</label>
+        <input name="first_name"  value={formData.first_name} onChange={handleChange} placeholder="John snow" className="input" required />
+
+        </div>
         <input name="last_name" value={formData.last_name} onChange={handleChange} placeholder="Last Name" className="input" required />
         <input name="email" value={formData.email} onChange={handleChange} type="email" placeholder="Email" className="input" required />
         <input name="password" value={formData.password} onChange={handleChange} type="password" placeholder="Password" className="input" required />
