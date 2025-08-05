@@ -14,11 +14,13 @@ export default function DashboardLayout() {
     teacher: [
       { path: "/dashboard", label: "Home" },
       { path: "/my-students", label: "My Students" },
+      { path: "/addMyStudents", label: "Register Students" },
       { path: "/profile", label: "My Profile" },
     ],
     student: [
       { path: "/dashboard", label: "Home" },
       { path: "/studentme", label: "My Profile" },
+      
     ],
   };
 

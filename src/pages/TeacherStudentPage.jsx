@@ -4,6 +4,7 @@ import {
   Button, TextField, Typography, CircularProgress, Table,
   TableHead, TableRow, TableCell, TableBody, TablePagination,Stack
 } from "@mui/material";
+import { confirmAlert } from "react-confirm-alert";
 import axiosPrivate from "../utils/AxiosPrivate";
 
 export default function TeacherStudentsPage() {
@@ -76,16 +77,29 @@ export default function TeacherStudentsPage() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure to delete this student?")) {
-      try {
-        await axiosPrivate.delete(`/teacher-students/${id}`);
-        fetchStudents(page + 1);
-      } catch (err) {
-        console.error("Delete error:", err);
-      }
-    }
-  };
+  const handleDelete = (id) => {
+  confirmAlert({
+    title: "Confirm Deletion",
+    message: "Are you sure you want to delete this student?",
+    buttons: [
+      {
+        label: "Yes, Delete",
+        onClick: async () => {
+          try {
+            await axiosPrivate.delete(`/teacher-students/${id}`);
+            fetchStudents(page + 1);
+          } catch (err) {
+            console.error("Delete error:", err);
+          }
+        },
+      },
+      {
+        label: "Cancel",
+        onClick: () => {},
+      },
+    ],
+  });
+};
 
   const handlePageChange = (_, newPage) => {
     fetchStudents(newPage + 1);

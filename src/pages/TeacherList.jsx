@@ -115,13 +115,13 @@ export default function TeachersPage() {
                 </td>
                 <td className="px-4 py-2 border">
                   <button
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded mr-2"
+                    className="bg-gray-500 hover:bg-blue-600 text-white px-3 py-1 rounded mr-2"
                     onClick={() => handleViewStudents(teacher)}
                   >
                     View Students
                   </button>
                   <button
-                    className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded mr-2"
+                    className="bg-yellow-600 hover:bg-yellow-600 text-white px-3 py-1 rounded mr-2"
                     onClick={() => handleEdit(teacher)}
                   >
                     Edit
