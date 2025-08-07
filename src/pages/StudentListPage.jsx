@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../utils/AxiosPrivate";
 import { useNavigate } from "react-router-dom";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { confirmAlert } from "react-confirm-alert";
 
 export default function StudentsPage() {
   const [students, setStudents] = useState([]);
@@ -9,6 +12,9 @@ export default function StudentsPage() {
   const [showModal, setShowModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [errorMessages, setErrorMessages] = useState([]);
+  const [fieldErrors, setFieldErrors] = useState({});
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,20 +43,67 @@ export default function StudentsPage() {
     setSelectedStudent((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleUpdate = () => {
-    axiosInstance.patch(`/students/${selectedStudent.id}/`, selectedStudent)
-      .then(() => {
-        setShowModal(false);
-        fetchStudents(currentPage);
-      })
-      .catch((err) => console.error(err));
+  const handleUpdate = async() => {
+
+ try {
+   const res= await  axiosInstance.patch(`/students/${selectedStudent.id}/`, selectedStudent)
+      setShowModal(false);
+     fetchStudents(currentPage);
+    
+ } catch (err) {
+      console.error("API error:", err);
+
+      if (err.response && err.response.data) {
+        const data = err.response.data.errors || {};
+        const errorList = [];
+        const fieldErrs = {};
+
+        for (const key in data) {
+          const msgs = data[key];
+          if (Array.isArray(msgs)) {
+            fieldErrs[key] = msgs;
+            errorList.push(...msgs);
+          } else if (typeof msgs === "string") {
+            fieldErrs[key] = [msgs];
+            errorList.push(msgs);
+          }
+        }
+
+        setErrorMessages(errorList);
+        setFieldErrors(fieldErrs);
+      } else {
+        setErrorMessages(["Failed to create student"]);
+      }
+    }
+      
   };
 
-  const handleDelete = (id) => {
-    axiosInstance.delete(`/students/${id}/`)
-      .then(() => fetchStudents(currentPage))
-      .catch((err) => console.error(err));
+
+ const handleDelete = (id) => {
+    confirmAlert({
+      title: "Confirm Deletion",
+      message: "Are you sure you want to delete this student?",
+      buttons: [
+        {
+          label: "Yes, Delete",
+          onClick: async () => {
+            try {
+              await axiosInstance.delete(`/students/${id}/`)
+                fetchStudents(currentPage)
+              
+            } catch (err) {
+              console.error("Delete error:", err);
+            }
+          },
+        },
+        {
+          label: "Cancel",
+          onClick: () => {},
+        },
+      ],
+    });
   };
+
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -107,15 +160,13 @@ export default function StudentsPage() {
                       setSelectedStudent(student);
                       setShowModal(true);
                     }}
-                    className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded mr-2"
                   >
-                    Edit
+                     <EditIcon  fontSize="small" />
                   </button>
                   <button
-                    onClick={() => handleDelete(student.id)}
-                    className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
+                    onClick={() => handleDelete(student.id)}  
                   >
-                    Delete
+                   <DeleteIcon className="text-red-500" fontSize="small" />
                   </button>
                 </td>
               </tr>
@@ -150,9 +201,19 @@ export default function StudentsPage() {
       </div>
 
       {showModal && selectedStudent && (
+        
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-xl">
             <h2 className="text-xl font-bold mb-4">Edit Student</h2>
+             {errorMessages.length > 0 && (
+        <div className="bg-red-100 text-red-700 px-4 py-2 rounded mb-4">
+          <ul className="list-disc pl-5">
+            {errorMessages.map((msg, index) => (
+              <li key={index}>{msg}</li>
+            ))}
+          </ul>
+        </div>
+      )}
             <div className="grid grid-cols-2 gap-4">
               <label className="flex flex-col">
                 First Name
@@ -166,7 +227,7 @@ export default function StudentsPage() {
                 Email
                 <input name="email" value={selectedStudent.email} onChange={handleEditChange} className="border p-2 rounded" />
               </label>
-              <label className="flex flex-col">
+              <label className="flex flex-col overflow-hidden">
                 Phone Number
                 <input name="phone_number" value={selectedStudent.phone_number} onChange={handleEditChange} className="border p-2 rounded" />
               </label>

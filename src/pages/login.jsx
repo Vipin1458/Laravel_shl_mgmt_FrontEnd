@@ -27,10 +27,7 @@ export default function Login() {
     try {
       const response = await axiosPrivate.post("/login", { email, password });
       console.log("LOGIN RESPONSE:", response);
-
-      login(response.data.user, response.data.access_token);
-
-     
+      login(response.data.user, response.data.access_token, response.data.refresh_token);
       navigate("/dashboard");
 
     } catch (err) {

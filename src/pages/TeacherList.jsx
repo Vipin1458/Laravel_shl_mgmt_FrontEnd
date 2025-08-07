@@ -14,6 +14,7 @@ import {
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { confirmAlert } from "react-confirm-alert";
 
 export default function TeachersPage() {
   const [teachers, setTeachers] = useState([]);
@@ -22,6 +23,8 @@ export default function TeachersPage() {
   const [studentsDialogOpen, setStudentsDialogOpen] = useState(false);
   const [studentList, setStudentList] = useState([]);
   const [currentTeacherName, setCurrentTeacherName] = useState("");
+  const [errorMessages, setErrorMessages] = useState([]);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const navigate = useNavigate();
 
@@ -47,17 +50,63 @@ export default function TeachersPage() {
     setSelectedTeacher({ ...selectedTeacher, [e.target.name]: e.target.value });
   };
 
-  const handleUpdate = () => {
-    axiosInstance
-      .put(`/teachers/${selectedTeacher.id}/`, selectedTeacher)
-      .then(() => {
+  const handleUpdate = async() => {
+try {
+     const res= await axiosInstance.patch(`/teachers/${selectedTeacher.id}/`, selectedTeacher)
         fetchTeachers();
         handleClose();
-      });
+     
+} catch (err) {
+      console.error("API error:", err);
+
+      if (err.response && err.response.data) {
+        const data = err.response.data.errors || {};
+        const errorList = [];
+        const fieldErrs = {};
+
+        for (const key in data) {
+          const msgs = data[key];
+          if (Array.isArray(msgs)) {
+            fieldErrs[key] = msgs;
+            errorList.push(...msgs);
+          } else if (typeof msgs === "string") {
+            fieldErrs[key] = [msgs];
+            errorList.push(msgs);
+          }
+        }
+
+        setErrorMessages(errorList);
+        setFieldErrors(fieldErrs);
+      } else {
+        setErrorMessages(["Failed to create student"]);
+      }
+    }
   };
 
+ 
   const handleDelete = (id) => {
-    axiosInstance.delete(`/teachers/${id}/`).then(() => fetchTeachers());
+    confirmAlert({
+      title: "Confirm Deletion",
+      message: "Are you sure you want to delete this student?",
+      buttons: [
+        {
+          label: "Yes, Delete",
+          onClick: async () => {
+            try {
+               axiosInstance.delete(`/teachers/${id}/`)
+                fetchTeachers()
+              
+            } catch (err) {
+              console.error("Delete error:", err);
+            }
+          },
+        },
+        {
+          label: "Cancel",
+          onClick: () => {},
+        },
+      ],
+    });
   };
 
   const handleViewStudents = (teacher) => {
@@ -152,6 +201,15 @@ export default function TeachersPage() {
       {selectedTeacher && (
         <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
           <DialogTitle>Edit Teacher</DialogTitle>
+              {errorMessages.length > 0 && (
+        <div className="bg-red-100 text-red-700 px-4 py-2 rounded mb-4">
+          <ul className="list-disc pl-5">
+            {errorMessages.map((msg, index) => (
+              <li key={index}>{msg}</li>
+            ))}
+          </ul>
+        </div>
+      )}
           <DialogContent dividers>
             <Stack spacing={2} mt={1}>
               <TextField

@@ -12,9 +12,15 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("auth", JSON.stringify(auth));
   }, [auth]);
 
-  const login = (user, token) => {
-    setAuth({ user, token });
+ const login = (user, token, refreshToken) => {
+  const authData = {
+    user,
+    token,
+    refreshToken,
   };
+  localStorage.setItem("auth", JSON.stringify(authData));
+  setAuth(authData);
+};
 
   const logout = () => {
     setAuth({ user: null, token: null });
