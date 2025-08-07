@@ -15,6 +15,8 @@ export default function TeacherStudentsPage() {
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
   const [rowsPerPage] = useState(5);
+  const [errorMessages, setErrorMessages] = useState([]);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const [formData, setFormData] = useState({
     first_name: "",
@@ -74,6 +76,26 @@ export default function TeacherStudentsPage() {
       fetchStudents(page + 1);
     } catch (err) {
       console.error("Update error:", err);
+      if(err.response && err.response.data){
+        const data=err.response.data.errors || {}
+        const errorList=[]
+        const fieldErrs={}
+        for(const key in data){
+          const msg = data[key]
+          if(Array.isArray(msg)){
+            fieldErrs[key]=msg
+            errorList.push(...msg)
+          }else if( typeof msg === "string"){
+            fieldErrs[key]=[msg]
+            errorList.push(msg)
+
+          }
+        }
+        setErrorMessages(errorList)
+        setFieldErrors(fieldErrs);
+      }else{
+        setErrorMessages(["Failed to update student"])
+      }
     }
   };
 
@@ -170,6 +192,19 @@ export default function TeacherStudentsPage() {
 
      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
   <DialogTitle>Edit Student</DialogTitle>
+  {errorMessages.length >0 && (
+    <div className="bg-red-100 text-red-700 px-4 py-2 rounded mb-4">
+      <ul className="list-disc pl-5">
+        {errorMessages.map((msg,index)=>(
+          <li key={index}>{msg}</li>
+        ))}
+
+      </ul>
+
+    </div>
+  )
+   
+  }
 
   <DialogContent>
     <Stack spacing={2} mt={1}>
