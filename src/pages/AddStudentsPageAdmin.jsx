@@ -42,7 +42,7 @@ export default function AddStudentPage() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "phone_number") {
-      if (!/^\d{0,10}$/.test(value)) return;
+      if (!/^\d{0,10}$/.test(value)) return ;
     }
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
