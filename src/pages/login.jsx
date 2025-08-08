@@ -1,5 +1,4 @@
 import { useState } from "react";
-import axiosPrivate from "../utils/AxiosPrivate";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import {
@@ -11,6 +10,7 @@ import {
   Alert,
   CircularProgress,
 } from "@mui/material";
+import { axiosPublic } from "../utils/AxiosPrivate";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -25,7 +25,7 @@ export default function Login() {
     setError("");
 
     try {
-      const response = await axiosPrivate.post("/login", { email, password });
+      const response = await axiosPublic.post("http://localhost:8000/api/login", { email, password });
       console.log("LOGIN RESPONSE:", response);
       login(response.data.user, response.data.access_token, response.data.refresh_token);
       navigate("/dashboard");

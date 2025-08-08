@@ -12,6 +12,8 @@ const StudentProfile = () => {
     try {
       setLoading(true)
       const res = await axiosInstance.get('/student/profile')
+      console.log("std",res);
+      
       setProfile(res.data)
       setFormData(res.data)
     } catch (err) {
@@ -98,6 +100,7 @@ const StudentProfile = () => {
           <div><strong>Date of Birth:</strong> {profile.date_of_birth}</div>
           <div><strong>Admission Date:</strong> {profile.admission_date}</div>
           <div><strong>Status:</strong> {profile.status}</div>
+          <div><strong>Assigned Teacher:</strong> {profile.teacher_name}</div>
         </div>
       )}
 

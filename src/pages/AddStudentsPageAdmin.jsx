@@ -30,7 +30,7 @@ export default function AddStudentPage() {
     const fetchTeachers = async () => {
       try {
         const res = await axiosInstance.get("/teachers");
-        setTeachers(res.data);
+        setTeachers(res.data.data);
       } catch (error) {
         console.error("Error loading teachers", error);
       }

@@ -10,6 +10,8 @@ import {
   TextField,
   MenuItem,
   Stack,
+  LinearProgress,
+  Pagination,
 } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
@@ -18,6 +20,7 @@ import { confirmAlert } from "react-confirm-alert";
 
 export default function TeachersPage() {
   const [teachers, setTeachers] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState(null);
   const [studentsDialogOpen, setStudentsDialogOpen] = useState(false);
@@ -25,21 +28,36 @@ export default function TeachersPage() {
   const [currentTeacherName, setCurrentTeacherName] = useState("");
   const [errorMessages, setErrorMessages] = useState([]);
   const [fieldErrors, setFieldErrors] = useState({});
-
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const perPage = 10; 
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchTeachers();
-  }, []);
+    fetchTeachers(page);
+  }, [page]);
 
-  const fetchTeachers = () => {
-    axiosInstance.get("/teachers").then((res) => setTeachers(res.data));
+  const fetchTeachers = async (currentPage = 1) => {
+    try {
+      setLoading(true);
+      const response = await axiosInstance.get(`/teachers?page=${currentPage}&per_page=${perPage}`);
+      setTeachers(response.data.data); 
+      setTotalPages(response.data.last_page);
+      setLoading(false);
+    } catch (error) {
+      console.error("API error:", error);
+      setLoading(false);
+    }
   };
 
   const handleEdit = (teacher) => {
     setSelectedTeacher(teacher);
     setOpen(true);
   };
+
+  const handleEdits=(teacher)=>{
+    setSelectedTeacher(teacher);
+  }
 
   const handleClose = () => {
     setOpen(false);
@@ -50,20 +68,17 @@ export default function TeachersPage() {
     setSelectedTeacher({ ...selectedTeacher, [e.target.name]: e.target.value });
   };
 
-  const handleUpdate = async() => {
-try {
-     const res= await axiosInstance.patch(`/teachers/${selectedTeacher.id}/`, selectedTeacher)
-        fetchTeachers();
-        handleClose();
-     
-} catch (err) {
+  const handleUpdate = async () => {
+    try {
+      await axiosInstance.patch(`/teachers/${selectedTeacher.id}/`, selectedTeacher);
+      fetchTeachers(page);
+      handleClose();
+    } catch (err) {
       console.error("API error:", err);
-
       if (err.response && err.response.data) {
         const data = err.response.data.errors || {};
         const errorList = [];
         const fieldErrs = {};
-
         for (const key in data) {
           const msgs = data[key];
           if (Array.isArray(msgs)) {
@@ -74,7 +89,6 @@ try {
             errorList.push(msgs);
           }
         }
-
         setErrorMessages(errorList);
         setFieldErrors(fieldErrs);
       } else {
@@ -83,7 +97,6 @@ try {
     }
   };
 
- 
   const handleDelete = (id) => {
     confirmAlert({
       title: "Confirm Deletion",
@@ -93,9 +106,8 @@ try {
           label: "Yes, Delete",
           onClick: async () => {
             try {
-               axiosInstance.delete(`/teachers/${id}/`)
-                fetchTeachers()
-              
+              await axiosInstance.delete(`/teachers/${id}/`);
+              fetchTeachers(page);
             } catch (err) {
               console.error("Delete error:", err);
             }
@@ -144,72 +156,84 @@ try {
             </tr>
           </thead>
           <tbody className="bg-white">
-            {teachers.map((teacher, index) => (
-              <tr
-                key={teacher.id}
-                className="text-center border-t hover:bg-gray-50"
-              >
-                <td className="px-4 py-2 border">{index + 1}</td>
-                <td className="px-4 py-2 border">
-                  {teacher.first_name} {teacher.last_name}
-                </td>
-                <td className="px-4 py-2 border">{teacher.email}</td>
-                <td className="px-4 py-2 border">{teacher.phone_number}</td>
-                <td className="px-4 py-2 border">
-                  {teacher.subject_specialization}
-                </td>
-                <td className="px-4 py-2 border">{teacher.employee_id}</td>
-                <td className="px-4 py-2 border">
-                  <span
-                    className={`px-2 py-1 rounded text-xs font-semibold ${
-                      teacher.status === "Active"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
-                    }`}
-                  >
-                    {teacher.status}
-                  </span>
-                </td>
-                <td className="flex gap-2 justify-center">
-                  <button
-                    onClick={() => handleViewStudents(teacher)}
-                  >
-                    <VisibilityIcon fontSize="small" />
-                    
-                  </button>
-
-                  <button
-                    onClick={() => handleEdit(teacher)}
-                  >
-                    <EditIcon fontSize="small" />
-                    
-                  </button>
-
-                  <button
-                    onClick={() => handleDelete(teacher.id)}
-                  >
-                    <DeleteIcon fontSize="small" />
-                    
-                  </button>
+            {loading ? (
+              <tr>
+                <td colSpan="10" className="text-center p-4">
+                  <LinearProgress color="success" />
                 </td>
               </tr>
-            ))}
+            ) : teachers.length === 0 ? (
+              <tr>
+                <td colSpan="10" className="text-center p-4 text-gray-500">
+                  No Teachers found.
+                </td>
+              </tr>
+            ) : (
+              teachers.map((teacher, index) => (
+                <tr
+                  key={teacher.id}
+                  className="text-center border-t hover:bg-gray-50"
+                >
+                  <td className="px-4 py-2 border">
+                    {(page - 1) * perPage + index + 1}
+                  </td>
+                  <td className="px-4 py-2 border">
+                    {teacher.first_name} {teacher.last_name}
+                  </td>
+                  <td className="px-4 py-2 border">{teacher.email}</td>
+                  <td className="px-4 py-2 border">{teacher.phone_number}</td>
+                  <td className="px-4 py-2 border">{teacher.subject_specialization}</td>
+                  <td className="px-4 py-2 border">{teacher.employee_id}</td>
+                  <td className="px-4 py-2 border">
+                    <span
+                      className={`px-2 py-1 rounded text-xs font-semibold ${
+                        teacher.status === "Active"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
+                    >
+                      {teacher.status}
+                    </span>
+                  </td>
+                  <td className="flex gap-2 justify-center">
+                    <button onClick={() => handleViewStudents(teacher)}>
+                      <VisibilityIcon fontSize="small" />
+                    </button>
+                    <button onClick={() => handleEdit(teacher)}>
+                      <EditIcon fontSize="small" />
+                    </button>
+                    <button onClick={() => handleDelete(teacher.id)}>
+                      <DeleteIcon fontSize="small" />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
+      </div>
+
+      <div className="flex justify-center mt-4">
+        <Pagination
+          count={totalPages}
+          page={page}
+          onChange={(e, value) => setPage(value)}
+          color="primary"
+        />
       </div>
 
       {selectedTeacher && (
         <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
           <DialogTitle>Edit Teacher</DialogTitle>
-              {errorMessages.length > 0 && (
-        <div className="bg-red-100 text-red-700 px-4 py-2 rounded mb-4">
-          <ul className="list-disc pl-5">
-            {errorMessages.map((msg, index) => (
-              <li key={index}>{msg}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+          {errorMessages.length > 0 && (
+            <div className="bg-red-100 text-red-700 px-4 py-2 rounded mb-4">
+              <ul className="list-disc pl-5">
+                {errorMessages.map((msg, index) => (
+                  <li key={index}>{msg}</li>
+                ))}
+              </ul>
+            </div>
+          )}
           <DialogContent dividers>
             <Stack spacing={2} mt={1}>
               <TextField
