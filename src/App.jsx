@@ -22,7 +22,11 @@ export default function App() {
       <>
          <Toaster position="top-right" reverseOrder={false} />
       <Routes>
-        <Route path="/login" element={<Login />} />
+          {!auth?.token ? (
+          <Route path="/login" element={<Login />} />
+        ) : (
+          <Route path="/login" element={<Navigate to="/dashboard" replace />} />
+        )}
 
         {auth?.token ? (
           
